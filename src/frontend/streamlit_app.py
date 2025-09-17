@@ -69,7 +69,7 @@ st.markdown("""
 st.markdown('<h1 class="main-header">🏦 Loan Status Prediction System</h1>', unsafe_allow_html=True)
 st.markdown("---")
 
-API_URL = "http://localhost:8000"
+API_URL = "https://loan-prediction-api-1hq4.onrender.com"
 
 # Personal Information Section
 st.markdown('<h2 class="section-header">👤 Personal Information</h2>', unsafe_allow_html=True)
