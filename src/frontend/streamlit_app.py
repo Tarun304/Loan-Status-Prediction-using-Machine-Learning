@@ -8,7 +8,11 @@ st.set_page_config(
     layout="centered"
 )
 
-# Custom CSS for better styling
+# Initialize session state for reset functionality
+if 'reset_key' not in st.session_state:
+    st.session_state.reset_key = 0
+
+# Custom CSS (same as before)
 st.markdown("""
 <style>
     .main-header {
@@ -25,28 +29,6 @@ st.markdown("""
         margin: 1.5rem 0 1rem 0;
         border-bottom: 2px solid #e74c3c;
         padding-bottom: 0.5rem;
-    }
-    .result-box {
-        padding: 1rem;
-        border-radius: 10px;
-        margin: 1rem 0;
-        text-align: center;
-    }
-    .approved {
-        background-color: #d4edda;
-        border: 2px solid #c3e6cb;
-        color: #155724;
-    }
-    .rejected {
-        background-color: #f8d7da;
-        border: 2px solid #f5c6cb;
-        color: #721c24;
-    }
-    .confidence-text {
-        font-size: 0.85rem;
-        color: #6c757d;
-        font-style: italic;
-        margin-top: 0.5rem;
     }
     .stButton > button {
         width: 100%;
@@ -76,38 +58,38 @@ st.markdown('<h2 class="section-header">👤 Personal Information</h2>', unsafe_
 col1, col2 = st.columns(2)
 
 with col1:
-    no_of_dependents = st.number_input("Number of Dependents", 0, 10, 0)
-    education = st.selectbox("Education Level", ["8th", "10th", "12th", "Graduate"])
+    no_of_dependents = st.number_input("Number of Dependents", 0, 10, 0, key=f"dependents_{st.session_state.reset_key}")
+    education = st.selectbox("Education Level", ["8th", "10th", "12th", "Graduate"], key=f"education_{st.session_state.reset_key}")
 
 with col2:
-    self_employed = st.selectbox("Self Employed", ["No", "Yes"])
-    employment_type = st.selectbox("Employment Type", ["Salaried", "Business", "Freelancer"])
+    self_employed = st.selectbox("Self Employed", ["No", "Yes"], key=f"self_employed_{st.session_state.reset_key}")
+    employment_type = st.selectbox("Employment Type", ["Salaried", "Business", "Freelancer"], key=f"employment_{st.session_state.reset_key}")
 
 # Financial Information Section
 st.markdown('<h2 class="section-header">💰 Financial Information</h2>', unsafe_allow_html=True)
 col3, col4 = st.columns(2)
 
 with col3:
-    income_annum = st.number_input("Annual Income (₹)", 0.0, step=10000.0, format="%.0f")
+    income_annum = st.number_input("Annual Income (₹)", 0.0, step=10000.0, format="%.0f", key=f"income_{st.session_state.reset_key}")
     st.caption("💡 Enter your total annual income before taxes")
-    loan_amount = st.number_input("Loan Amount (₹)", 0.0, step=50000.0, format="%.0f")
+    loan_amount = st.number_input("Loan Amount (₹)", 0.0, step=50000.0, format="%.0f", key=f"loan_amount_{st.session_state.reset_key}")
     st.caption("💡 Amount you want to borrow")
 
 with col4:
-    loan_term = st.number_input("Loan Term (years)", min_value=0.1, step=0.5, value=10.0)
-    cibil_score = st.number_input("CIBIL Score", 300, 900, 700)
+    loan_term = st.number_input("Loan Term (years)", min_value=0.1, step=0.5, value=10.0, key=f"loan_term_{st.session_state.reset_key}")
+    cibil_score = st.number_input("CIBIL Score", 300, 900, 700, key=f"cibil_{st.session_state.reset_key}")
 
 # Assets Information Section
 st.markdown('<h2 class="section-header">🏠 Assets Information</h2>', unsafe_allow_html=True)
 col5, col6 = st.columns(2)
 
 with col5:
-    residential_assets_value = st.number_input("Residential Assets (₹)", 0.0, step=100000.0, format="%.0f")
-    commercial_assets_value = st.number_input("Commercial Assets (₹)", 0.0, step=50000.0, format="%.0f")
+    residential_assets_value = st.number_input("Residential Assets (₹)", 0.0, step=100000.0, format="%.0f", key=f"residential_{st.session_state.reset_key}")
+    commercial_assets_value = st.number_input("Commercial Assets (₹)", 0.0, step=50000.0, format="%.0f", key=f"commercial_{st.session_state.reset_key}")
 
 with col6:
-    luxury_assets_value = st.number_input("Luxury Assets (₹)", 0.0, step=25000.0, format="%.0f")
-    bank_asset_value = st.number_input("Bank Assets (₹)", 0.0, step=10000.0, format="%.0f")
+    luxury_assets_value = st.number_input("Luxury Assets (₹)", 0.0, step=25000.0, format="%.0f", key=f"luxury_{st.session_state.reset_key}")
+    bank_asset_value = st.number_input("Bank Assets (₹)", 0.0, step=10000.0, format="%.0f", key=f"bank_{st.session_state.reset_key}")
 
 # Prediction Section
 st.markdown("---")
@@ -120,10 +102,13 @@ with col_predict:
 
 with col_reset:
     if st.button("🔄 Reset"):
+        # Increment reset key to force all widgets to reset
+        st.session_state.reset_key += 1
         st.rerun()
 
+# Rest of your prediction logic stays exactly the same...
 if predict_clicked:
-    # Input validation checks
+    # Your existing validation and prediction code here
     validation_errors = []
     
     if income_annum <= 0:
@@ -138,19 +123,16 @@ if predict_clicked:
     if cibil_score < 300:
         validation_errors.append("CIBIL score cannot be less than 300")
     
-    # Employment logic validation
     if self_employed == "Yes" and employment_type == "Salaried":
         validation_errors.append("Self-employed person cannot have Salaried employment type")
     
     if self_employed == "No" and employment_type in ["Business", "Freelancer"]:
         validation_errors.append("Non self-employed person cannot have Business/Freelancer employment type")
     
-    # Display validation errors
     if validation_errors:
         for error in validation_errors:
             st.error(f"⚠️ {error}")
     else:
-        # Prepare data
         data = {
             "no_of_dependents": no_of_dependents,
             "education": education,
@@ -166,14 +148,12 @@ if predict_clicked:
             "bank_asset_value": bank_asset_value
         }
         
-        # Make API call
         with st.spinner("🤖 Our AI is analyzing your application... This may take a few seconds"):
             try:
                 response = requests.post(f"{API_URL}/predict", json=data, timeout=10)
                 if response.status_code == 200:
                     result = response.json()
                     
-                    # Display results with compact formatting
                     if result["status"] == "Approved":
                         st.markdown(f"""
                         <div style="
@@ -221,7 +201,6 @@ if predict_clicked:
                         </div>
                         """, unsafe_allow_html=True)
                     
-                    # Optional: Show application summary
                     with st.expander("📋 View Application Summary"):
                         st.json(data)
                         
