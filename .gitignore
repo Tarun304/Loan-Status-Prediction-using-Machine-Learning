@@ -224,3 +224,5 @@ models/
 # API keys and secrets
 secrets.json
 config/secrets.py
+
+models/artifacts/
