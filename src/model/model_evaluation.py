@@ -164,11 +164,9 @@ class ModelEvaluator:
 
                 # Log preprocessing artifacts
                 logger.info("Logging preprocessing artifacts to MLflow...")
-                mlflow.log_artifact("models/artifacts/scaler.pkl")
                 mlflow.log_artifact("models/artifacts/boxcox_lambdas.json")
-                mlflow.log_artifact("models/artifacts/selected_features.json")
                 mlflow.log_artifact("models/artifacts/encodings.json")
-                logger.info("All preprocessing artifacts logged to MLflow")
+                logger.info("Preprocessing artifacts logged to MLflow")
 
                 # Log evaluation metrics
                 mlflow.log_metric("test_accuracy", self.metrics["accuracy"])
