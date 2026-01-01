@@ -1,11 +1,11 @@
 import json
 import logging
 import os
-import pickle
 
 import numpy as np
 import pandas as pd
 import yaml
+from scipy.stats import boxcox
 from scipy.stats.mstats import winsorize
 from sklearn.model_selection import train_test_split
 
@@ -27,7 +27,7 @@ class DataPreprocessing:
         """Initialize DataPreprocessing with parameters."""
         self.params = self.load_params(params_path)
         self.config = self.params["data_preprocessing"]
-        self.encoders = {}
+        self.lambdas = {}
 
     def load_params(self, params_path: str) -> dict:
         """Load parameters from YAML file."""
@@ -125,6 +125,49 @@ class DataPreprocessing:
             return df
         except Exception as e:
             logger.error("Failed to treat outliers: %s", e)
+            raise
+
+    def apply_boxcox_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Apply Box-Cox transformation to handle skewness (BEFORE split like notebook)."""
+        try:
+            columns = self.config["boxcox_columns"]
+
+            for column in columns:
+                # Fit and transform on entire dataset (matches notebook)
+                transformed_data, lambda_value = boxcox(df[column] + 1)
+                df[column] = transformed_data
+                self.lambdas[column] = float(lambda_value)
+
+                logger.debug(f"Box-Cox applied to {column}, lambda={lambda_value:.4f}")
+
+            logger.info("Box-Cox transformation completed on columns: %s", columns)
+            return df
+        except Exception as e:
+            logger.error("Failed to apply Box-Cox transformation: %s", e)
+            raise
+
+    def create_total_assets(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Create total_assets feature by summing all asset columns."""
+        try:
+            asset_cols = self.config["asset_columns"]
+            df["total_assets"] = df[asset_cols].sum(axis=1)
+
+            logger.info("Created total_assets feature from: %s", asset_cols)
+            return df
+        except Exception as e:
+            logger.error("Failed to create total_assets: %s", e)
+            raise
+
+    def drop_asset_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Drop individual asset columns after creating total_assets."""
+        try:
+            columns = self.config["asset_columns"]
+            df = df.drop(columns=columns, axis=1)
+
+            logger.info("Dropped individual asset columns: %s", columns)
+            return df
+        except Exception as e:
+            logger.error("Failed to drop asset columns: %s", e)
             raise
 
     def encode_categorical_features(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -229,6 +272,12 @@ class DataPreprocessing:
                 json.dump(encoding_info, f, indent=4)
             logger.info("Encoding mappings saved to %s", encodings_path)
 
+            # Save Box-Cox lambdas
+            lambdas_path = os.path.join(artifacts_dir, "boxcox_lambdas.json")
+            with open(lambdas_path, "w") as f:
+                json.dump(self.lambdas, f, indent=4)
+            logger.info("Box-Cox lambdas saved to %s", lambdas_path)
+
         except Exception as e:
             logger.error("Failed to save artifacts: %s", e)
             raise
@@ -246,6 +295,15 @@ class DataPreprocessing:
 
             # Treat outliers (class-wise Winsorization)
             df = self.treat_outliers_by_class(df)
+
+            # Apply Box-Cox transformation (BEFORE split - matches notebook)
+            df = self.apply_boxcox_transform(df)
+
+            # Create total_assets feature (BEFORE split - matches notebook)
+            df = self.create_total_assets(df)
+
+            # Drop individual asset columns (BEFORE split - matches notebook)
+            df = self.drop_asset_columns(df)
 
             # Encode categorical features
             df = self.encode_categorical_features(df)
@@ -270,6 +328,7 @@ class DataPreprocessing:
             print("=" * 60)
             print(f"Train shape: {train_df.shape}")
             print(f"Test shape: {test_df.shape}")
+            print(f"\nColumns: {train_df.columns.tolist()}")
             print(f"\nTarget distribution (train):")
             print(train_df["loan_status"].value_counts())
             print(f"\nTarget distribution (test):")

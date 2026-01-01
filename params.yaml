@@ -9,7 +9,11 @@ data_preprocessing:
   processed_data_path: data/processed
   test_size: 0.2
   random_state: 42
-  # Winsorization limits for outlier treatment
+  # Winsorization configuration
   winsorize_columns: ['cibil_score', 'residential_assets_value', 'commercial_assets_value', 'bank_asset_value']
   winsorize_limits_approved: [0.05, 0.1]
   winsorize_limits_rejected: [0.05, 0.1]
+  # Box-Cox transformation (BEFORE split like notebook)
+  boxcox_columns: ['loan_amount', 'residential_assets_value', 'commercial_assets_value', 'luxury_assets_value', 'bank_asset_value']
+  # Asset aggregation (BEFORE split like notebook)
+  asset_columns: ['residential_assets_value', 'commercial_assets_value', 'luxury_assets_value', 'bank_asset_value']
