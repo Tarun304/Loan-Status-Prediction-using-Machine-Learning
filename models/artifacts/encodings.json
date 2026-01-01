@@ -1,0 +1,12 @@
+{
+    "education_mapping": {
+        "8th": 0,
+        "10th": 1,
+        "12th": 2,
+        "Graduate": 3
+    },
+    "target_mapping": {
+        "Approved": 1,
+        "Rejected": 0
+    }
+}

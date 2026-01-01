@@ -3,3 +3,13 @@ data_ingestion:
   interim_data_path: "data/interim"
   drop_columns:
     - loan_id
+
+data_preprocessing:
+  interim_data_file: data/interim/loan_data_cleaned.csv
+  processed_data_path: data/processed
+  test_size: 0.2
+  random_state: 42
+  # Winsorization limits for outlier treatment
+  winsorize_columns: ['cibil_score', 'residential_assets_value', 'commercial_assets_value', 'bank_asset_value']
+  winsorize_limits_approved: [0.05, 0.1]
+  winsorize_limits_rejected: [0.05, 0.1]
