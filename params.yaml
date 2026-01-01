@@ -1,0 +1,5 @@
+data_ingestion:
+  raw_data_file: "data/raw/loan_approval_data.csv"
+  interim_data_path: "data/interim"
+  drop_columns:
+    - loan_id

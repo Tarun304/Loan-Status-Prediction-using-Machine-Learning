@@ -2,7 +2,7 @@
 *.csv
 *.xlsx
 *.xls
-data/
+/data/
 datasets/
 reports/
 Case Study*
