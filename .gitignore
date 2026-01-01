@@ -13,11 +13,13 @@ Report_*
 *.ppt
 *.pptx
 
+
 # ===== DVC TRACKING FILES (MUST NOT BE IGNORED) =====
 !*.dvc
 !.dvc/
 .dvc/cache
 .dvc/tmp
+
 
 
 # ===== PYTHON =====
@@ -26,6 +28,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+
 
 # Distribution / packaging
 .Python
@@ -47,13 +50,16 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+
 # PyInstaller
 *.manifest
 *.spec
 
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+
 
 # Unit test / coverage reports
 htmlcov/
@@ -70,6 +76,7 @@ coverage.xml
 .pytest_cache/
 cover/
 
+
 # ===== VIRTUAL ENVIRONMENTS =====
 .env
 .venv
@@ -79,20 +86,25 @@ ENV/
 env.bak/
 venv.bak/
 
+
 # ===== JUPYTER NOTEBOOK =====
 .ipynb_checkpoints
+
 
 # ===== FASTAPI / UVICORN =====
 *.log
 logs/
 
+
 # ===== STREAMLIT =====
 .streamlit/
+
 
 # ===== IDE / EDITORS =====
 # VSCode
 .vscode/
 *.code-workspace
+
 
 # PyCharm
 .idea/
@@ -100,14 +112,17 @@ logs/
 *.iml
 *.ipr
 
+
 # Sublime Text
 *.sublime-project
 *.sublime-workspace
+
 
 # Vim
 *.swp
 *.swo
 *~
+
 
 # Emacs
 *~
@@ -115,6 +130,7 @@ logs/
 /.emacs.desktop
 /.emacs.desktop.lock
 *.elc
+
 
 # ===== OPERATING SYSTEM =====
 # macOS
@@ -131,6 +147,7 @@ Icon
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
 
+
 # Windows
 Thumbs.db
 Thumbs.db:encryptable
@@ -146,6 +163,7 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 
+
 # Linux
 *~
 .fuse_hidden*
@@ -153,18 +171,22 @@ $RECYCLE.BIN/
 .Trash-*
 .nfs*
 
+
 # ===== DEPLOYMENT =====
 # Environment variables
 .env.local
 .env.production
 .env.development
 
+
 # Docker
 .dockerignore
 Dockerfile.prod
 
+
 # Render/Heroku
 .env.render
+
 
 # ===== MISCELLANEOUS =====
 # Backup files
@@ -173,26 +195,31 @@ Dockerfile.prod
 *.tmp
 *.temp
 
+
 # Archive files
 *.zip
 *.tar.gz
 *.rar
 
+
 # Database files
 *.db
 *.sqlite3
+
 
 # Cache directories
 .cache/
 .npm/
 node_modules/
 
+
 # ===== PROJECT SPECIFIC =====
-# Model files (uncomment if you don't want to commit models)
-# models/
-# *.joblib
-# *.pkl
-# *.model
+# Model files and artifacts (tracked by DVC, not Git)
+models/
+*.joblib
+*.pkl
+*.model
+
 
 # API keys and secrets
 secrets.json

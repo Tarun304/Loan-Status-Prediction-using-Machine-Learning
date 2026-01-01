@@ -17,3 +17,13 @@ data_preprocessing:
   boxcox_columns: ['loan_amount', 'residential_assets_value', 'commercial_assets_value', 'luxury_assets_value', 'bank_asset_value']
   # Asset aggregation (BEFORE split like notebook)
   asset_columns: ['residential_assets_value', 'commercial_assets_value', 'luxury_assets_value', 'bank_asset_value']
+
+feature_engineering:
+  train_file: data/processed/train.csv
+  test_file: data/processed/test.csv
+  output_path: data/features
+  random_state: 42
+  # SMOTE configuration
+  apply_smote: true
+  # Selected features (from notebook experimentation)
+  selected_features: ['cibil_score', 'loan_term', 'loan_amount', 'total_assets', 'income_annum', 'employment_type_Salaried']
