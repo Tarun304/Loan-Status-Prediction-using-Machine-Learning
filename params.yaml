@@ -27,3 +27,19 @@ feature_engineering:
   apply_smote: true
   # Selected features (from notebook experimentation)
   selected_features: ['cibil_score', 'loan_term', 'loan_amount', 'total_assets', 'income_annum', 'employment_type_Salaried']
+
+model_building:
+  train_features_file: data/features/train_features.csv
+  test_features_file: data/features/test_features.csv
+  model_output_path: models
+  model_name: xgboost_model.pkl
+  random_state: 42
+  # XGBoost best hyperparameters (from notebook Grid Search)
+  xgboost_params:
+    n_estimators: 200
+    max_depth: 3
+    learning_rate: 0.2
+    subsample: 0.75
+    colsample_bytree: 0.75
+    eval_metric: "logloss"
+
