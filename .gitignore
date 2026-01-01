@@ -13,6 +13,13 @@ Report_*
 *.ppt
 *.pptx
 
+# ===== DVC TRACKING FILES (MUST NOT BE IGNORED) =====
+!*.dvc
+!.dvc/
+.dvc/cache
+.dvc/tmp
+
+
 # ===== PYTHON =====
 # Byte-compiled / optimized / DLL files
 __pycache__/
