@@ -43,3 +43,9 @@ model_building:
     colsample_bytree: 0.75
     eval_metric: "logloss"
 
+model_evaluation:
+  test_features_file: data/features/test_features.csv
+  model_path: models/xgboost_model.pkl
+  metrics_file: reports/metrics.json
+
+
