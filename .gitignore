@@ -1,24 +1,9 @@
-# ===== DATASETS AND REPORTS (Keep Local) =====
-*.csv
-*.xlsx
-*.xls
-reports/
-Case Study*
-Report_*
-*.pdf
-*.docx
-*.doc
-*.ppt
-*.pptx
-
-
 # Virtual Environment
 venv/
-bostvenv/
 *.pyc
 __pycache__/
 
-# Data files - LET DVC track directories, BLOCK actual data files
+# Data files - BLOCK CSV, ALLOW DVC metadata
 /data/raw/*.csv
 /data/interim/*.csv
 /data/processed/*.csv
@@ -26,66 +11,48 @@ __pycache__/
 !*.dvc
 !.dvc/
 
-# Model files - LET DVC track, BLOCK actual models
+# Model files - BLOCK models, ALLOW DVC metadata
 /models/*.pkl
 /models/*.joblib
 /models/*.h5
 /models/artifacts/*
 !*.dvc
 
-# Reports - LET DVC track specific files
-/reports/*.json
+# Reports - BLOCK contents, ALLOW DVC metadata
+/reports/*
+!reports/*.json
+!reports/*.dvc
 !*.dvc
 
-# DVC cache (large files)
+# DVC cache (remote storage)
 .dvc/cache
 .dvc/tmp
 
-# MLflow tracking (if using)
+# MLflow tracking
 mlruns/
 mlartifacts/
 
-# Jupyter Notebook checkpoints
+# Jupyter notebooks
 .ipynb_checkpoints/
-*.ipynb_checkpoints
 
-# OS files
+# OS generated
 .DS_Store
 Thumbs.db
-[Dd]esktop.ini
-$RECYCLE.BIN/
+Desktop.ini
 
 # IDE
 .vscode/
 .idea/
 
-# Python packaging
-*.egg-info/
-dist/
-build/
-
 # Logs
 *.log
-logs/
 
 # Environment variables
 .env
 .env.*
 
-# Backup files
-*.backup
-*.tmp
-
-# Local scripts
-load_env.ps1
-setup_env.ps1
-
-# API keys
-secrets.json
-config/secrets.py
-
-# Generated large files
-*.zip
-*.tar.gz
-*.db
-*.sqlite3
+# Documents (your MS Word + PDF)
+*.docx
+*.pdf
+Case_Study*.docx
+Report_*.pdf
