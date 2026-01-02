@@ -2,8 +2,6 @@
 *.csv
 *.xlsx
 *.xls
-/data/
-datasets/
 reports/
 Case Study*
 Report_*
@@ -14,215 +12,80 @@ Report_*
 *.pptx
 
 
-# ===== DVC TRACKING FILES (MUST NOT BE IGNORED) =====
+# Virtual Environment
+venv/
+bostvenv/
+*.pyc
+__pycache__/
+
+# Data files - LET DVC track directories, BLOCK actual data files
+/data/raw/*.csv
+/data/interim/*.csv
+/data/processed/*.csv
+/data/features/*.csv
 !*.dvc
 !.dvc/
+
+# Model files - LET DVC track, BLOCK actual models
+/models/*.pkl
+/models/*.joblib
+/models/*.h5
+/models/artifacts/*
+!*.dvc
+
+# Reports - LET DVC track specific files
+/reports/*.json
+!*.dvc
+
+# DVC cache (large files)
 .dvc/cache
 .dvc/tmp
 
+# MLflow tracking (if using)
+mlruns/
+mlartifacts/
 
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*.ipynb_checkpoints
 
-# ===== PYTHON =====
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
+# OS files
+.DS_Store
+Thumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
 
+# IDE
+.vscode/
+.idea/
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
+# Python packaging
 *.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+dist/
+build/
 
-
-# PyInstaller
-*.manifest
-*.spec
-
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
-
-
-# ===== VIRTUAL ENVIRONMENTS =====
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-
-# ===== JUPYTER NOTEBOOK =====
-.ipynb_checkpoints
-
-
-# ===== FASTAPI / UVICORN =====
+# Logs
 *.log
 logs/
 
-
-# ===== STREAMLIT =====
-.streamlit/
-
-
-# ===== IDE / EDITORS =====
-# VSCode
-.vscode/
-*.code-workspace
-
-
-# PyCharm
-.idea/
-*.iws
-*.iml
-*.ipr
-
-
-# Sublime Text
-*.sublime-project
-*.sublime-workspace
-
-
-# Vim
-*.swp
-*.swo
-*~
-
-
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-
-
-# ===== OPERATING SYSTEM =====
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon
-._*
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-
-
-# Windows
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-*.stackdump
-[Dd]esktop.ini
-$RECYCLE.BIN/
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
-*.lnk
-
-
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-.nfs*
-
-
-# ===== DEPLOYMENT =====
 # Environment variables
-.env.local
-.env.production
-.env.development
+.env
+.env.*
 
-
-# Docker
-.dockerignore
-Dockerfile.prod
-
-
-# Render/Heroku
-.env.render
-
-
-# ===== MISCELLANEOUS =====
 # Backup files
-*.bak
 *.backup
 *.tmp
-*.temp
 
+# Local scripts
+load_env.ps1
+setup_env.ps1
 
-# Archive files
-*.zip
-*.tar.gz
-*.rar
-
-
-# Database files
-*.db
-*.sqlite3
-
-
-# Cache directories
-.cache/
-.npm/
-node_modules/
-
-
-# ===== PROJECT SPECIFIC =====
-# Model files and artifacts (tracked by DVC, not Git)
-models/
-*.joblib
-*.pkl
-*.model
-
-
-# API keys and secrets
+# API keys
 secrets.json
 config/secrets.py
 
-models/artifacts/
+# Generated large files
+*.zip
+*.tar.gz
+*.db
+*.sqlite3
