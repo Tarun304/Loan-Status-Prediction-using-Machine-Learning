@@ -1,0 +1,7 @@
+[cache]
+    dir = C:/dvc-cache
+    type = copy
+[core]
+    remote = origin
+['remote "origin"']
+    url = https://dagshub.com/tkbehera304/Loan-Status-Prediction.dvc
