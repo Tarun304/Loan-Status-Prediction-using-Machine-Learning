@@ -52,9 +52,12 @@ stages:
       - models/xgboost_model.pkl
     params:
       - model_evaluation
+    metrics:
+      - reports/metrics.json:
+          cache: false
     outs:
-      - reports/metrics.json
       - reports/experiment_info.json
+
 
   model_registration:
     cmd: python src/model/model_registration.py

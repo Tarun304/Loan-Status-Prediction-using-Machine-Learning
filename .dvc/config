@@ -4,4 +4,4 @@
 [core]
     remote = origin
 ['remote "origin"']
-    url = https://dagshub.com/tkbehera304/Loan-Status-Prediction.dvc
+    url = https://dagshub.com/tkbehera304/Loan-Status-Prediction-using-Machine-Learning.dvc
