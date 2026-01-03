@@ -35,7 +35,7 @@ stages:
       - models/artifacts/scaler.pkl
       - models/artifacts/selected_features.json
 
-  model_training:
+  model_building:
     cmd: python src/model/model_building.py
     deps:
       - src/model/model_building.py

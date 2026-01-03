@@ -56,3 +56,8 @@ Desktop.ini
 *.pdf
 Case_Study*.docx
 Report_*.pdf
+
+# Pipeline artifacts
+model_promoted.txt
+model_promotion_errors.log
+*.log

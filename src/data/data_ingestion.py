@@ -4,6 +4,7 @@ import subprocess
 
 import pandas as pd
 import yaml
+from pathlib import Path
 
 logger = logging.getLogger("data_ingestion")
 logger.setLevel("DEBUG")
@@ -109,10 +110,13 @@ class DataIngestion:
             df: Pandas DataFrame to save
         """
         try:
-            os.makedirs(self.interim_data_path, exist_ok=True)
-            file_path = os.path.join(self.interim_data_path, "loan_data_cleaned.csv")
-            df.to_csv(file_path, index=False)
-            logger.info("Interim data saved to %s", file_path)
+            output_dir = Path(self.interim_data_path)
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            output_file = output_dir / "loan_data_cleaned.csv"
+            df.to_csv(output_file, index=False)
+
+            logger.info("Interim data saved to %s", output_file.as_posix())
         except Exception as e:
             logger.error("Failed to save interim data: %s", e)
             raise
