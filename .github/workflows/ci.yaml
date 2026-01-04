@@ -1,0 +1,241 @@
+name: CI Pipeline
+
+on: 
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ml-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install UV
+        run: |
+          pip install uv
+
+      - name: Cache UV dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system -r requirements.txt
+          uv pip install --system pytest
+
+      - name: Configure DVC
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+        run: |
+          dvc remote modify origin --local auth basic
+          dvc remote modify origin --local user ${{ secrets.DAGSHUB_USERNAME }}
+          dvc remote modify origin --local password ${{ secrets.DAGSHUB_TOKEN }}
+
+      - name: Pull data from DVC
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          dvc pull -r origin || echo "No remote data to pull"
+
+      - name: Run DVC pipeline
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          dvc repro
+
+      - name: Run model tests
+        run: |
+          pytest tests/test_model.py -v
+
+      - name: Run API tests
+        run: |
+          pytest tests/test_api.py -v
+
+      - name: Push to DVC remote
+        if: success()
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          dvc push -r origin
+
+      - name: Promote model to production
+        if: success()
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          python scripts/model_promotion.py
+
+      - name: Upload promotion flag
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-flag
+          path: model_promoted.txt
+
+      - name: Display pipeline results
+        if: always()
+        run: |
+          echo "Pipeline Results:"
+          if [ -f "reports/metrics.json" ]; then
+            cat reports/metrics.json
+          else
+            echo "No metrics file found"
+          fi
+
+  build-and-push-docker:
+    needs: ml-pipeline
+    runs-on: ubuntu-latest
+    if: success()
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - name: Download promotion flag
+        uses: actions/download-artifact@v4
+        with:
+          name: promotion-flag
+        continue-on-error: true
+
+      - name: Check if model was promoted
+        id: check_promotion
+        run: |
+          if [ -f "model_promoted.txt" ]; then
+            PROMOTED=$(cat model_promoted.txt)
+            echo "promoted=$PROMOTED" >> $GITHUB_OUTPUT
+            echo "Model promotion status: $PROMOTED"
+          else
+            echo "promoted=false" >> $GITHUB_OUTPUT
+            echo "No promotion flag found"
+          fi
+
+      - name: Check which Docker files changed
+        id: check_changes
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
+          
+          API_CHANGED=$(echo "$CHANGED_FILES" | grep -E '(Dockerfile.api|requirements-api.txt|src/api/)' || true)
+          STREAMLIT_CHANGED=$(echo "$CHANGED_FILES" | grep -E '(Dockerfile.streamlit|requirements-streamlit.txt|src/streamlit_app/)' || true)
+          SHARED_CHANGED=$(echo "$CHANGED_FILES" | grep -E '(docker-compose.yml|src/config.py|src/__init__.py)' || true)
+          
+          if [ -n "$API_CHANGED" ] || [ -n "$SHARED_CHANGED" ]; then
+            echo "build_api=true" >> $GITHUB_OUTPUT
+            echo "FastAPI files changed"
+          else
+            echo "build_api=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if [ -n "$STREAMLIT_CHANGED" ] || [ -n "$SHARED_CHANGED" ]; then
+            echo "build_streamlit=true" >> $GITHUB_OUTPUT
+            echo "Streamlit files changed"
+          else
+            echo "build_streamlit=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Decide what to build
+        id: decide_build
+        run: |
+          PROMOTED="${{ steps.check_promotion.outputs.promoted }}"
+          API_CHANGED="${{ steps.check_changes.outputs.build_api }}"
+          STREAMLIT_CHANGED="${{ steps.check_changes.outputs.build_streamlit }}"
+          
+          if [ "$PROMOTED" = "true" ]; then
+            echo "build_api=true" >> $GITHUB_OUTPUT
+            echo "build_streamlit=true" >> $GITHUB_OUTPUT
+            echo "Building BOTH images (model promoted)"
+          else
+            echo "build_api=$API_CHANGED" >> $GITHUB_OUTPUT
+            echo "build_streamlit=$STREAMLIT_CHANGED" >> $GITHUB_OUTPUT
+            
+            if [ "$API_CHANGED" = "true" ] && [ "$STREAMLIT_CHANGED" = "true" ]; then
+              echo "Building BOTH images (files changed)"
+            elif [ "$API_CHANGED" = "true" ]; then
+              echo "Building ONLY FastAPI image"
+            elif [ "$STREAMLIT_CHANGED" = "true" ]; then
+              echo "Building ONLY Streamlit image"
+            else
+              echo "No Docker builds needed"
+            fi
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.decide_build.outputs.build_api == 'true' || steps.decide_build.outputs.build_streamlit == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: steps.decide_build.outputs.build_api == 'true' || steps.decide_build.outputs.build_streamlit == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Convert repository owner to lowercase
+        if: steps.decide_build.outputs.build_api == 'true' || steps.decide_build.outputs.build_streamlit == 'true'
+        id: repo
+        run: |
+          echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Build and push FastAPI image
+        if: steps.decide_build.outputs.build_api == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.api
+          push: true
+          tags: |
+            ghcr.io/${{ steps.repo.outputs.owner }}/loan-api:latest
+            ghcr.io/${{ steps.repo.outputs.owner }}/loan-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Streamlit image
+        if: steps.decide_build.outputs.build_streamlit == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.streamlit
+          push: true
+          tags: |
+            ghcr.io/${{ steps.repo.outputs.owner }}/loan-streamlit:latest
+            ghcr.io/${{ steps.repo.outputs.owner }}/loan-streamlit:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Docker build summary
+        if: steps.decide_build.outputs.build_api == 'true' || steps.decide_build.outputs.build_streamlit == 'true'
+        run: |
+          if [ "${{ steps.decide_build.outputs.build_api }}" = "true" ]; then
+            echo "FastAPI image built: ghcr.io/${{ steps.repo.outputs.owner }}/loan-api:latest"
+          fi
+          if [ "${{ steps.decide_build.outputs.build_streamlit }}" = "true" ]; then
+            echo "Streamlit image built: ghcr.io/${{ steps.repo.outputs.owner }}/loan-streamlit:latest"
+          fi
