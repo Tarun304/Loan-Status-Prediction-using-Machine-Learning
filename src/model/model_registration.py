@@ -63,7 +63,8 @@ class ModelRegistrar:
         """Register the model to MLflow Model Registry with aliases and tags"""
         try:
             run_id = self.experiment_info["run_id"]
-            model_path = self.experiment_info["model_path"]
+            # Use the actual model artifact path from MLflow
+            source = self.experiment_info["model_artifact_path"]
 
             # Initialize MLflow Client
             client = MlflowClient()
@@ -74,11 +75,6 @@ class ModelRegistrar:
                 logger.info(f"Created new registered model: {self.model_name}")
             except MlflowException:
                 logger.info(f"Registered model {self.model_name} already exists")
-
-            # Get the artifact source path
-            run = client.get_run(run_id)
-            artifact_uri = run.info.artifact_uri
-            source = f"{artifact_uri}/{model_path}"
 
             logger.info(f"Creating model version from source: {source}")
 

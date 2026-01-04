@@ -159,12 +159,12 @@ stages:
     deps:
     - path: models/xgboost_model.pkl
       hash: md5
-      md5: b5c9fa5452e6142fa9de286b5f837820
-      size: 89406
+      md5: 4df5388b15b2c29d735771832688b41e
+      size: 199419
     - path: src/model/model_evaluation.py
       hash: md5
-      md5: 28d75ec74152e27eaa1c01d7544316f2
-      size: 8111
+      md5: 549d9cfbf5389d2fd3d58be20e6166b2
+      size: 8521
     params:
       params.yaml:
         model_evaluation:
@@ -174,20 +174,51 @@ stages:
     outs:
     - path: reports/experiment_info.json
       hash: md5
-      md5: 13debea7e9a062071d41f3db8eb437cf
-      size: 270
+      md5: 409f7249d84df9e2fd2ac3373a1af893
+      size: 403
     - path: reports/metrics.json
       hash: md5
-      md5: 493997f9ab7b0ce221b55be49361477c
-      size: 150
+      md5: 10cc20057752f8e92af222ab54568b60
+      size: 149
   model_registration:
     cmd: python src/model/model_registration.py
     deps:
     - path: reports/experiment_info.json
       hash: md5
-      md5: 13debea7e9a062071d41f3db8eb437cf
-      size: 270
+      md5: 409f7249d84df9e2fd2ac3373a1af893
+      size: 403
     - path: src/model/model_registration.py
       hash: md5
-      md5: 832825b8b7471b3b3a802c1976e74934
-      size: 6414
+      md5: 75692f4e9e3ab222d9ff1724803672dc
+      size: 6294
+  model_building:
+    cmd: python src/model/model_building.py
+    deps:
+    - path: data/features/train_features.csv
+      hash: md5
+      md5: 9b40b29858df8d14725fd3e13cfc442c
+      size: 510919
+    - path: src/model/model_building.py
+      hash: md5
+      md5: 5f04d8762d5b790065bc274aac1d48cc
+      size: 4873
+    params:
+      params.yaml:
+        model_building:
+          train_features_file: data/features/train_features.csv
+          test_features_file: data/features/test_features.csv
+          model_output_path: models
+          model_name: xgboost_model.pkl
+          random_state: 42
+          xgboost_params:
+            n_estimators: 200
+            max_depth: 3
+            learning_rate: 0.2
+            subsample: 0.75
+            colsample_bytree: 0.75
+            eval_metric: logloss
+    outs:
+    - path: models/xgboost_model.pkl
+      hash: md5
+      md5: 4df5388b15b2c29d735771832688b41e
+      size: 199419

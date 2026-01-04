@@ -157,13 +157,19 @@ class ModelEvaluator:
                 y_pred = self.make_predictions(X_test)
                 self.metrics = self.calculate_metrics(y_test, y_pred)
 
-                # Log XGBoost model
+                # Log the XGBoost model
                 logger.info("Logging XGBoost model to MLflow...")
-                mlflow.xgboost.log_model(xgb_model=self.model, name="model")
+                model_info = mlflow.xgboost.log_model(
+                    xgb_model=self.model, name="model"
+                )
                 logger.info("XGBoost model logged successfully")
+                logger.info(f"Model ID: {model_info.model_uuid}")
+                logger.info(f"Model artifact path: {model_info.artifact_path}")
 
                 # Log preprocessing artifacts
                 logger.info("Logging preprocessing artifacts to MLflow...")
+                mlflow.log_artifact("models/artifacts/scaler.pkl")
+                mlflow.log_artifact("models/artifacts/selected_features.json")
                 mlflow.log_artifact("models/artifacts/boxcox_lambdas.json")
                 mlflow.log_artifact("models/artifacts/encodings.json")
                 logger.info("Preprocessing artifacts logged to MLflow")
@@ -178,12 +184,14 @@ class ModelEvaluator:
                 self.save_metrics(self.metrics)
                 mlflow.log_artifact(self.config["metrics_file"])
 
-                # Save experiment info
+                # Get run ID
                 run_id = mlflow.active_run().info.run_id
+
                 experiment_info = {
                     "run_id": run_id,
                     "model_path": "model",
                     "metrics": self.metrics,
+                    "model_artifact_path": model_info.artifact_path,
                 }
 
                 info_file = "reports/experiment_info.json"
