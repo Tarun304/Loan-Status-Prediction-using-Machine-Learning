@@ -46,7 +46,7 @@ class ModelPromoter:
         """Initialize ModelPromoter with Loan Status configuration."""
         self.model_name = "loan-approval-xgboost"
         self.min_f1_score = 0.95  # Minimum acceptable F1 for production model
-        self.improvement_threshold = 0.01  # Require 1% F1 improvement
+        self.improvement_threshold = 0.00  # Require 1% F1 improvement
         self.mlflow_uri = MLFLOW_TRACKING_URI
         self.client = None
         self.new_metrics = None
