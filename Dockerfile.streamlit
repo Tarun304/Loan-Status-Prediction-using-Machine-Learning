@@ -1,0 +1,23 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+RUN pip install uv
+
+COPY requirements-streamlit.txt .
+
+#  keep timeout for safety
+ENV UV_HTTP_TIMEOUT=300
+RUN uv pip install --system -r requirements-streamlit.txt
+
+# Copy only Streamlit app 
+COPY src/streamlit_app/ ./src/streamlit_app/
+COPY src/__init__.py ./src/__init__.py
+
+# Streamlit runs on port 8501
+EXPOSE 8501
+
+# Set API URL environment variable (will point to FastAPI container)
+ENV API_URL=http://fastapi:8000
+
+# Start Streamlit
+CMD ["streamlit", "run", "src/streamlit_app/app.py", "--server.address", "0.0.0.0", "--server.port", "8501"]

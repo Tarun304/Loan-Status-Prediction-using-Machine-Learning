@@ -1,0 +1,20 @@
+# Web framework
+fastapi==0.116.2
+uvicorn==0.35.0
+
+# Validation & settings
+pydantic==2.11.9
+python-dotenv==1.2.1
+
+# MLflow + model loading
+mlflow==3.8.1
+xgboost==3.0.5
+
+# ML runtime
+numpy==2.3.3
+pandas==2.3.2
+scikit-learn==1.7.2
+joblib==1.5.2
+
+# HTTP (healthcheck)
+requests==2.32.5

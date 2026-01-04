@@ -1,0 +1,33 @@
+# Use Python 3.13 slim
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Install uv
+RUN pip install --no-cache-dir uv
+
+# Copy requirements first (for layer caching)
+COPY requirements-api.txt .
+
+# Install dependencies with uv (optimized)
+ENV UV_HTTP_TIMEOUT=300
+RUN uv pip install --system --no-cache -r requirements-api.txt && \
+    rm -rf /root/.cache/uv && \
+    rm -rf /root/.cache/pip && \
+    rm -rf /tmp/*
+
+# Copy only necessary application code
+COPY src/api/ ./src/api/
+COPY src/config.py ./src/config.py
+COPY src/__init__.py ./src/__init__.py
+COPY params.yaml .
+
+# Expose FastAPI port
+EXPOSE 8000
+
+# Health check 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+
+# Start FastAPI
+CMD ["uvicorn", "src.api.app:app", "--host", "0.0.0.0", "--port", "8000"]

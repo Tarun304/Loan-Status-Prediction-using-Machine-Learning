@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+.venv/
+
+# Git
+.git/
+.gitignore
+
+# DVC / MLflow local artifacts
+mlruns/
+mlartifacts/
+.dvc/cache
+.dvc/tmp
+
+# Data & models (never needed in API image)
+data/
+models/
+reports/
+
+# Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Logs & env
+*.log
+.env
+.env.*
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
